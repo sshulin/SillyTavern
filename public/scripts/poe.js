@@ -114,6 +114,29 @@ function loadPoeSettings() {
 }
 
 /**
+ * Load Poe.com settings from saved settings
+ * @param {Object} savedSettings - Saved settings object
+ */
+export function loadPoeSettingsFromStorage(savedSettings) {
+    if (savedSettings.poe_settings) {
+        poe_settings = { ...poe_settings, ...savedSettings.poe_settings };
+    } else if (savedSettings.bot_name) {
+        // Legacy support for settings stored at root level
+        poe_settings.bot_name = savedSettings.bot_name || 'claude-3-5-sonnet';
+        poe_settings.temperature = savedSettings.temperature || 0.7;
+        poe_settings.skip_system_prompt = savedSettings.skip_system_prompt || false;
+        poe_settings.stream = savedSettings.stream !== false; // Default to true
+    }
+    
+    // Update UI with loaded settings
+    $('#poe_bot_name').val(poe_settings.bot_name);
+    $('#poe_temperature').val(poe_settings.temperature);
+    $('#poe_temperature_display').text(poe_settings.temperature);
+    $('#poe_skip_system_prompt').prop('checked', poe_settings.skip_system_prompt);
+    $('#poe_stream').prop('checked', poe_settings.stream);
+}
+
+/**
  * Send a request to Poe.com API
  * @param {string} type - Request type
  * @param {Array} messages - Array of messages
@@ -255,6 +278,20 @@ export function initPoe() {
     // Handle temperature slider display
     $(document).on('input', '#poe_temperature', function() {
         $('#poe_temperature_display').text($(this).val());
+        loadPoeSettings();
+        saveSettingsDebounced();
+    });
+
+    // Handle bot name changes
+    $(document).on('input', '#poe_bot_name', function() {
+        loadPoeSettings();
+        saveSettingsDebounced();
+    });
+
+    // Handle checkbox changes
+    $(document).on('change', '#poe_skip_system_prompt, #poe_stream', function() {
+        loadPoeSettings();
+        saveSettingsDebounced();
     });
 
     // Load Poe.com settings from UI

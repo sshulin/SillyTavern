@@ -2344,8 +2344,9 @@
                                     For privacy reasons, your API key will be hidden after you click 'Connect'.
                                 </div>
                                 <h4 data-i18n="Bot Selection">Bot Selection</h4>
-                                <small data-i18n="Choose which Poe.com bot to use">Choose which Poe.com bot to use</small>
-                                <select id="poe_bot_name">
+                                <small data-i18n="Choose which Poe.com bot to use or enter a custom bot name">Choose which Poe.com bot to use or enter a custom bot name</small>
+                                <input id="poe_bot_name" list="poe_bot_options" class="text_pole" placeholder="Enter bot name or select from list" value="claude-3-5-sonnet">
+                                <datalist id="poe_bot_options">
                                     <option value="claude-3-5-sonnet">Claude 3.5 Sonnet</option>
                                     <option value="claude-3-opus">Claude 3 Opus</option>
                                     <option value="gpt-4">GPT-4</option>
@@ -2354,7 +2355,7 @@
                                     <option value="llama-3-1-8b-instruct">Llama 3.1 8B Instruct</option>
                                     <option value="llama-3-1-70b-instruct">Llama 3.1 70B Instruct</option>
                                     <option value="mixtral-8x7b-instruct">Mixtral 8x7B Instruct</option>
-                                </select>
+                                </datalist>
                                 <h4 data-i18n="Temperature">Temperature</h4>
                                 <small data-i18n="Controls the randomness of responses (0.0 = deterministic, 2.0 = very random)">Controls the randomness of responses (0.0 = deterministic, 2.0 = very random)</small>
                                 <input id="poe_temperature" type="range" min="0" max="2" step="0.1" value="0.7" class="slider">

@@ -23,6 +23,8 @@ import {
     initKoboldSettings,
 } from './scripts/kai-settings.js';
 
+import { loadPoeSettingsFromStorage } from './scripts/poe.js';
+
 import { getEventSourceStream } from './scripts/sse-stream.js';
 
 import {
@@ -7041,6 +7043,9 @@ export async function getSettings() {
         // OpenAI
         loadOpenAISettings(data, settings.oai_settings ?? settings);
 
+        // Poe
+        loadPoeSettingsFromStorage(settings.poe_settings ?? settings);
+
         // Horde
         loadHordeSettings(settings);
 
@@ -7153,6 +7158,7 @@ export async function saveSettings(loopCounter = 0) {
         tag_map: tag_map,
         nai_settings: nai_settings,
         kai_settings: kai_settings,
+        poe_settings: poe_settings,
         oai_settings: oai_settings,
         background: background_settings,
         proxies: proxies,
