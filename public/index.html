@@ -43,6 +43,7 @@
     <link rel="stylesheet" type="text/css" href="css/select2-overrides.css">
     <link rel="stylesheet" type="text/css" href="css/mobile-styles.css">
     <link rel="stylesheet" type="text/css" href="css/user.css">
+    <link rel="stylesheet" type="text/css" href="css/poe-settings.css">
     <link rel="icon" type="image/x-icon" href="favicon.ico">
     <!-- Scripts are loaded at the end of the body to improve page load speed -->
 </head>
@@ -2195,6 +2196,7 @@
                             <option value="novel" data-i18n="NovelAI">NovelAI</option>
                             <option value="koboldhorde" data-i18n="AI Horde">AI Horde</option>
                             <option value="kobold" data-i18n="KoboldAI">KoboldAI Classic</option>
+                            <option value="poe" data-i18n="Poe.com">Poe.com</option>
                         </select>
                     </div>
                     <div id="kobold_horde" style="position: relative;"> <!-- shows the kobold settings -->
@@ -2324,6 +2326,74 @@
                             <div class="online_status_indicator"></div>
                             <div class="online_status_text" data-i18n="No connection...">No connection... </div>
                         </div>
+                    </div>
+                    <div id="poe_settings" style="display: none;position: relative;"> <!-- shows the poe settings -->
+                        <form action="javascript:void(null);" method="post" enctype="multipart/form-data">
+                            <div id="poe_api_block">
+                                <h4 data-i18n="Poe.com API Key">Poe.com API Key</h4>
+                                <small>
+                                    <span data-i18n="Get it here:">Get it here: </span> <a target="_blank" href="https://poe.com" data-i18n="Poe.com">Poe.com</a><br>
+                                    <span data-i18n="You need to create an account and generate an API key.">You need to create an account and generate an API key.</span>
+                                </small>
+                                <div class="flex-container">
+                                    <input id="poe_api_key" name="poe_api_key" class="text_pole flex1" type="text" placeholder="Enter your Poe.com API key" autocomplete="off">
+                                    <div title="Save API key" data-i18n="[title]Save API key" class="menu_button fa-solid fa-save fa-fw" id="poe_save_api_key"></div>
+                                    <div title="Manage API keys" data-i18n="[title]Manage API keys" class="menu_button fa-solid fa-key fa-fw manage-api-keys" data-key="api_key_poe"></div>
+                                </div>
+                                <div data-for="poe_api_key" class="neutral_warning" data-i18n="For privacy reasons, your API key will be hidden after you click 'Connect'.">
+                                    For privacy reasons, your API key will be hidden after you click 'Connect'.
+                                </div>
+                                <h4 data-i18n="Bot Selection">Bot Selection</h4>
+                                <small data-i18n="Choose which Poe.com bot to use">Choose which Poe.com bot to use</small>
+                                <select id="poe_bot_name">
+                                    <option value="claude-3-5-sonnet">Claude 3.5 Sonnet</option>
+                                    <option value="claude-3-opus">Claude 3 Opus</option>
+                                    <option value="gpt-4">GPT-4</option>
+                                    <option value="gpt-4-turbo">GPT-4 Turbo</option>
+                                    <option value="gemini-pro">Google Gemini Pro</option>
+                                    <option value="llama-3-1-8b-instruct">Llama 3.1 8B Instruct</option>
+                                    <option value="llama-3-1-70b-instruct">Llama 3.1 70B Instruct</option>
+                                    <option value="mixtral-8x7b-instruct">Mixtral 8x7B Instruct</option>
+                                </select>
+                                <h4 data-i18n="Temperature">Temperature</h4>
+                                <small data-i18n="Controls the randomness of responses (0.0 = deterministic, 2.0 = very random)">Controls the randomness of responses (0.0 = deterministic, 2.0 = very random)</small>
+                                <input id="poe_temperature" type="range" min="0" max="2" step="0.1" value="0.7" class="slider">
+                                <div class="flex-container">
+                                    <span id="poe_temperature_display">0.7</span>
+                                </div>
+                                <div class="range-block">
+                                    <label for="poe_skip_system_prompt" class="checkbox_label widthFreeExpand">
+                                        <input id="poe_skip_system_prompt" type="checkbox" />
+                                        <span data-i18n="Skip System Prompt">Skip System Prompt</span>
+                                    </label>
+                                    <div class="toggle-description justifyLeft">
+                                        <span data-i18n="When enabled, skips the system prompt in the request">When enabled, skips the system prompt in the request</span>
+                                    </div>
+                                </div>
+                                <div class="range-block">
+                                    <label for="poe_stream" class="checkbox_label widthFreeExpand">
+                                        <input id="poe_stream" type="checkbox" checked />
+                                        <span data-i18n="Stream Response">Stream Response</span>
+                                    </label>
+                                    <div class="toggle-description justifyLeft">
+                                        <span data-i18n="When enabled, responses are streamed in real-time">When enabled, responses are streamed in real-time</span>
+                                    </div>
+                                </div>
+                                <div class="flex-container">
+                                    <div id="poe_test_connection" class="menu_button menu_button_icon" data-i18n="Test Connection">Test Connection</div>
+                                </div>
+                            </div>
+                            <div class="online_status">
+                                <div class="online_status_indicator"></div>
+                                <div class="online_status_text" data-i18n="Not connected...">Not connected...</div>
+                            </div>
+                        </form>
+                    </div>
+                    <div id="poe_api-presets" style="display: none;">
+                        <!-- Poe API presets will be loaded here -->
+                    </div>
+                    <div id="range_block_poe" style="display: none;">
+                        <!-- Poe range settings will be loaded here -->
                     </div>
                     <div id="textgenerationwebui_api" style="display: none;position: relative;">
                         <form action="javascript:void(null);" method="post" enctype="multipart/form-data">

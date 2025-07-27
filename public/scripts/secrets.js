@@ -62,6 +62,7 @@ export const SECRET_KEYS = {
     FALAI: 'api_key_falai',
     XAI: 'api_key_xai',
     VERTEXAI_SERVICE_ACCOUNT: 'vertexai_service_account_json',
+    POE: 'api_key_poe',
 };
 
 const FRIENDLY_NAMES = {
@@ -98,6 +99,7 @@ const FRIENDLY_NAMES = {
     [SECRET_KEYS.XAI]: 'xAI (Grok)',
     [SECRET_KEYS.VERTEXAI_SERVICE_ACCOUNT]: 'Google Vertex AI (Service Account)',
     [SECRET_KEYS.STABILITY]: 'Stability AI',
+    [SECRET_KEYS.POE]: 'Poe.com',
     [SECRET_KEYS.CUSTOM_OPENAI_TTS]: 'Custom OpenAI TTS',
     [SECRET_KEYS.TAVILY]: 'Tavily',
     [SECRET_KEYS.BFL]: 'Black Forest Labs',
@@ -112,6 +114,7 @@ const FRIENDLY_NAMES = {
     [SECRET_KEYS.LINGVA_URL]: 'Lingva Endpoint (e.g. https://lingva.ml/api/v1)',
     [SECRET_KEYS.ONERING_URL]: 'OneRingTranslator Endpoint (e.g. http://127.0.0.1:4990/translate)',
     [SECRET_KEYS.DEEPLX_URL]: 'DeepLX Endpoint (e.g. http://127.0.0.1:1188/translate)',
+    [SECRET_KEYS.POE]: 'POE',
 };
 
 const INPUT_MAP = {
@@ -147,6 +150,7 @@ const INPUT_MAP = {
     [SECRET_KEYS.AIMLAPI]: '#api_key_aimlapi',
     [SECRET_KEYS.XAI]: '#api_key_xai',
     [SECRET_KEYS.VERTEXAI_SERVICE_ACCOUNT]: '#vertexai_service_account_json',
+    [SECRET_KEYS.POE]: '#api_key_poe',
 };
 
 const getLabel = () => moment().format('L LT');

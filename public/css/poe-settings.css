@@ -1,0 +1,56 @@
+/* Poe.com Settings Styling */
+.poe_settings {
+    margin-top: 10px;
+    padding: 10px;
+    border: 1px solid var(--SmartThemeBorderColor);
+    border-radius: 5px;
+    background-color: var(--SmartThemeBlurColor);
+}
+
+.poe_settings_row {
+    margin-bottom: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.poe_settings_row label {
+    font-weight: bold;
+    color: var(--SmartThemeShadowColor);
+}
+
+.poe_settings_row input[type="text"],
+.poe_settings_row input[type="number"] {
+    width: 100%;
+    padding: 5px;
+    border: 1px solid var(--SmartThemeBorderColor);
+    border-radius: 3px;
+    background-color: var(--SmartThemeBlurColor);
+    color: var(--SmartThemeShadowColor);
+}
+
+.poe_settings_row input[type="checkbox"] {
+    margin-right: 5px;
+}
+
+.poe_settings_row small {
+    color: var(--SmartThemeShadowColor);
+    font-size: 0.8em;
+    opacity: 0.8;
+}
+
+.poe_settings_row button {
+    margin-top: 5px;
+    padding: 8px 16px;
+    background-color: var(--SmartThemeBlurColor);
+    border: 1px solid var(--SmartThemeBorderColor);
+    border-radius: 3px;
+    color: var(--SmartThemeShadowColor);
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.poe_settings_row button:hover {
+    background-color: var(--SmartThemeBorderColor);
+    color: var(--SmartThemeBlurColor);
+} 

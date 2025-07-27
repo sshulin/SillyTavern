@@ -640,7 +640,7 @@ export function getUserDirectories(handle) {
         }
     }
 
-    const directories = structuredClone(USER_DIRECTORY_TEMPLATE);
+    const directories = JSON.parse(JSON.stringify(USER_DIRECTORY_TEMPLATE));
     for (const key in directories) {
         directories[key] = path.join(globalThis.DATA_ROOT, handle, USER_DIRECTORY_TEMPLATE[key]);
     }

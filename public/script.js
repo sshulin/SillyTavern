@@ -23,6 +23,8 @@ import {
     initKoboldSettings,
 } from './scripts/kai-settings.js';
 
+import { getEventSourceStream } from './scripts/sse-stream.js';
+
 import {
     textgenerationwebui_settings as textgen_settings,
     loadTextGenSettings,
@@ -111,6 +113,15 @@ import {
     selected_proxy,
     initOpenAI,
 } from './scripts/openai.js';
+
+import {
+    poe_settings,
+} from './scripts/poe.js';
+
+import {
+    secret_state,
+    SECRET_KEYS,
+} from './scripts/secrets.js';
 
 import {
     generateNovelWithStreaming,
@@ -263,6 +274,7 @@ import { extractReasoningFromData, initReasoning, parseReasoningInSwipes, Prompt
 import { accountStorage } from './scripts/util/AccountStorage.js';
 import { initWelcomeScreen, openPermanentAssistantChat, openPermanentAssistantCard, getPermanentAssistantAvatar } from './scripts/welcome-screen.js';
 import { initDataMaid } from './scripts/data-maid.js';
+import { initPoe } from './scripts/poe.js';
 import { clearItemizedPrompts, deleteItemizedPrompts, findItemizedPromptSet, initItemizedPrompts, itemizedParams, itemizedPrompts, loadItemizedPrompts, promptItemize, replaceItemizedPromptText, saveItemizedPrompts } from './scripts/itemized-prompts.js';
 import { getSystemMessageByType, initSystemMessages, SAFETY_CHAT, sendSystemMessage, system_message_types, system_messages } from './scripts/system-messages.js';
 import { event_types, eventSource } from './scripts/events.js';
@@ -687,6 +699,7 @@ async function firstLoadInit() {
     await initScrapers();
     initCustomSelectedSamplers();
     initDataMaid();
+    initPoe();
     initItemizedPrompts();
     addDebugFunctions();
     doDailyExtensionUpdatesCheck();
@@ -2702,7 +2715,8 @@ export function isStreamingEnabled() {
         )
         || (main_api == 'kobold' && kai_settings.streaming_kobold && kai_flags.can_use_streaming)
         || (main_api == 'novel' && nai_settings.streaming_novel)
-        || (main_api == 'textgenerationwebui' && textgen_settings.streaming));
+        || (main_api == 'textgenerationwebui' && textgen_settings.streaming)
+        || (main_api == 'poe'));
 }
 
 function showStopButton() {
@@ -4395,12 +4409,80 @@ export async function Generate(type, { automatic_trigger, force_name2, quiet_pro
             if (counts) {
                 parseTokenCounts(counts, thisPromptBits);
             }
-
-            if (!dryRun) {
-                setInContextMessages(openai_messages_count, type);
-            }
             break;
         }
+        case 'poe': {
+            // Convert messages to Poe format
+            const messages = [];
+            
+            // Add system message if available
+            if (system && system.trim()) {
+                messages.push({ role: 'system', content: system });
+            }
+            
+            // Add character description and personality
+            if (description && description.trim()) {
+                messages.push({ role: 'system', content: `Character Description: ${description}` });
+            }
+            if (personality && personality.trim()) {
+                messages.push({ role: 'system', content: `Character Personality: ${personality}` });
+            }
+            
+            // Add scenario if available
+            if (scenario && scenario.trim()) {
+                messages.push({ role: 'system', content: `Scenario: ${scenario}` });
+            }
+            
+            // Add conversation history
+            if (chat && chat.length > 0) {
+                for (const message of chat) {
+                    if (message.is_user) {
+                        messages.push({ role: 'user', content: message.mes });
+                    } else {
+                        messages.push({ role: 'assistant', content: message.mes });
+                    }
+                }
+            }
+            
+            // Add the current prompt
+            messages.push({ role: 'user', content: finalPrompt });
+            
+            // Get API key from secret state or input field
+            let apiKey = '';
+            console.debug('Secret state for POE:', secret_state[SECRET_KEYS.POE]);
+            console.debug('SECRET_KEYS.POE:', SECRET_KEYS.POE);
+            
+            if (secret_state[SECRET_KEYS.POE] && Array.isArray(secret_state[SECRET_KEYS.POE]) && secret_state[SECRET_KEYS.POE].length > 0) {
+                apiKey = secret_state[SECRET_KEYS.POE][0].value || '';
+                console.debug('Got API key from secret state:', apiKey ? '***' + apiKey.slice(-4) : 'empty');
+            } else {
+                const inputKey = $('#poe_api_key').val();
+                console.debug('Input key value:', inputKey ? '***' + inputKey.toString().slice(-4) : 'empty');
+                if (inputKey && inputKey.toString().trim().length > 0) {
+                    apiKey = inputKey.toString().trim();
+                    console.debug('Got API key from input field:', '***' + apiKey.slice(-4));
+                }
+            }
+            
+            console.debug('Final API key for request:', apiKey ? '***' + apiKey.slice(-4) : 'empty');
+
+            generate_data = {
+                messages: messages,
+                bot_name: poe_settings?.bot_name || 'claude-3-5-sonnet',
+                temperature: poe_settings?.temperature || 0.7,
+                skip_system_prompt: poe_settings?.skip_system_prompt || false,
+                stream: poe_settings?.stream || false,
+                user_id: poe_settings?.user_id || '',
+                conversation_id: poe_settings?.conversation_id || '',
+                message_id: poe_settings?.message_id || '',
+                api_key: apiKey,
+            };
+            break;
+        }
+    }
+
+    if (main_api === 'openai' && !dryRun) {
+        setInContextMessages(openai_messages_count, type);
     }
 
     await eventSource.emit(event_types.GENERATE_AFTER_DATA, generate_data);
@@ -5190,6 +5272,62 @@ export async function sendGenerationRequest(type, data, options = {}) {
  * @param {AdditionalRequestOptions} [options] Additional options for the generation request
  * @returns {Promise<any>} Streaming generator
  */
+async function sendPoeStreamingRequest(type, data, options = {}) {
+    const url = getGenerateUrl('poe');
+    const response = await fetch(url, {
+        method: 'POST',
+        headers: getRequestHeaders(),
+        body: JSON.stringify({
+            ...data,
+            stream: true
+        }),
+        signal: streamingProcessor.abortController.signal,
+    });
+
+    if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`Poe API error: ${response.status} ${response.statusText} - ${errorText}`);
+    }
+
+    const eventStream = getEventSourceStream();
+    response.body.pipeThrough(eventStream);
+    const reader = eventStream.readable.getReader();
+
+    return async function* streamData() {
+        let text = '';
+        const swipes = [];
+        const toolCalls = [];
+        const state = { reasoning: '', image: '' };
+        
+        while (true) {
+            const { done, value } = await reader.read();
+            if (done) return;
+            
+            const rawData = value.data;
+            if (rawData === '[DONE]') return;
+            
+            try {
+                const parsed = JSON.parse(rawData);
+                
+                if (parsed.choices && parsed.choices[0] && parsed.choices[0].delta) {
+                    const content = parsed.choices[0].delta.content;
+                    if (content) {
+                        text += content;
+                    }
+                    
+                    yield { text, swipes: swipes, logprobs: null, toolCalls: toolCalls, state: state };
+                    
+                    if (parsed.choices[0].finish_reason === 'stop') {
+                        return;
+                    }
+                }
+            } catch (parseError) {
+                console.warn('Failed to parse Poe streaming data:', rawData, parseError);
+            }
+        }
+    };
+}
+
 export async function sendStreamingRequest(type, data, options = {}) {
     if (abortController?.signal?.aborted) {
         throw new Error('Generation was aborted.');
@@ -5204,6 +5342,8 @@ export async function sendStreamingRequest(type, data, options = {}) {
             return await generateNovelWithStreaming(data, streamingProcessor.abortController.signal);
         case 'kobold':
             return await generateKoboldWithStreaming(data, streamingProcessor.abortController.signal);
+        case 'poe':
+            return sendPoeStreamingRequest(type, data, options);
         default:
             throw new Error('Streaming is enabled, but the current API does not support streaming.');
     }
@@ -5225,6 +5365,8 @@ export function getGenerateUrl(api) {
             return '/api/backends/text-completions/generate';
         case 'novel':
             return '/api/novelai/generate';
+        case 'poe':
+            return '/api/backends/poe/generate';
         default:
             throw new Error(`Unknown API: ${api}`);
     }
@@ -5331,6 +5473,8 @@ export function extractMessageFromData(data, activeApi = null) {
                 ?? '';
         case 'novel':
             return data.output;
+        case 'poe':
+            return data?.choices?.[0]?.message?.content ?? data.response ?? data.text ?? '';
         case 'openai':
             return data?.content?.find(p => p.type === 'text')?.text ?? data?.choices?.[0]?.message?.content ?? data?.choices?.[0]?.text ?? data?.text ?? data?.message?.content?.[0]?.text ?? data?.message?.tool_plan ?? '';
         default:
@@ -6730,6 +6874,15 @@ export function changeMainAPI() {
             maxContextElem: $('#max_context_block'),
             amountGenElem: $('#amount_gen_block'),
         },
+        'poe': {
+            apiStreaming: $('#NULL_SELECTOR'),
+            apiSettings: $('#poe_settings'),
+            apiConnector: $('#poe_api'),
+            apiPresets: $('#poe_api-presets'),
+            apiRanges: $('#range_block_poe'),
+            maxContextElem: $('#max_context_block'),
+            amountGenElem: $('#amount_gen_block'),
+        },
     };
     //console.log('--- apiElements--- ');
     //console.log(apiElements);
@@ -6921,9 +7074,7 @@ export async function getSettings() {
             settings.main_api = 'kobold';
         }
 
-        if (settings.main_api == 'poe') {
-            settings.main_api = 'openai';
-        }
+        // Poe.com is now properly supported, no need to redirect
 
         main_api = settings.main_api;
         $('#main_api').val(main_api);

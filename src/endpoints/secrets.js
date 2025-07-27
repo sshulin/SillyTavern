@@ -55,6 +55,7 @@ export const SECRET_KEYS = {
     AIMLAPI: 'api_key_aimlapi',
     XAI: 'api_key_xai',
     VERTEXAI_SERVICE_ACCOUNT: 'vertexai_service_account_json',
+    POE: 'api_key_poe',
 };
 
 /**
